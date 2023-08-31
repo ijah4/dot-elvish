@@ -147,7 +147,7 @@ fn history {||
   set edit:current-command = $new-cmd
 }
 
-set edit:insert:binding[Ctrl-R] = {|| history >/dev/tty 2>&1 }
+#set edit:insert:binding[Ctrl-R] = {|| history >/dev/tty 2>&1 }
 
 fn update-emacs {
   var app-dir = ~/Applications
