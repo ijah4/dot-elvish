@@ -16,8 +16,10 @@ var optpaths = [
   /usr/local/bin
   /usr/local/sbin
   #windows
+  "C:/Program Files (x86)/Common Files/Oracle/Java/javapath"
   c:/ProgramData/scoop/shims
   c:/ProgramData/scoop/apps/vscode/current
+  c:\emacs\bin
   c:/windows/system32
   c:/windows
   c:/windows/System32/Wbem
@@ -58,8 +60,6 @@ set edit:insert:binding[Alt-m] = $edit:-instant:start~
 
 set edit:max-height = 20
 
-use github.com/zzamboni/elvish-modules/alias
-
 fn have-external { |prog|
   put ?(which $prog >/dev/null 2>&1)
 }
@@ -67,9 +67,9 @@ fn only-when-external { |prog lambda|
   if (have-external $prog) { $lambda }
 }
 
-only-when-external hub {
-  alias:new git hub
-}
+use github.com/zzamboni/elvish-modules/alias
+
+only-when-external hub { alias:new git hub }
 
 only-when-external bat {
   alias:new cat bat
