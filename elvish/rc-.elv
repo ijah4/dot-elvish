@@ -4,43 +4,34 @@ use readline-binding
 use path
 use str
 use math
-use re
+
+# Where all the Go stuff is
+# if (path:is-dir ~/Dropbox/Personal/devel/go) {
+#   set E:GOPATH = ~/Dropbox/Personal/devel/go
+# } else {
+#   set E:GOPATH = ~/go
+# }
 
 # Optional paths, add only those that exist
 var optpaths = [
-  ~/.emacs.d/bin
-  #Unix
-  /bin
-  /sbin
-  /usr/bin
-  /usr/sbin
-  /usr/local/bin
-  /usr/local/sbin
-  #windows
-  "C:/Program Files (x86)/Common Files/Oracle/Java/javapath"
-  C:/ProgramData/scoop/apps/python/current/Scripts
-  C:/ProgramData/scoop/apps/python/current
-  c:/ProgramData/scoop/shims
-  c:/ProgramData/scoop/apps/vscode/current
-  c:/emacs/bin
-  c:/windows/system32
-  c:/windows
-  c:/windows/System32/Wbem
-  c:/windows/System32/WindowsPowerShell/v1.0
-  c:/windows/System32/OpenSSH
-  c:/Program Files/dotnet
-  c:/msys64/mingw64/bin
-  c:/Users/w/scoop/shims
-  "C:/Program Files (x86)/dotnet/"
-  C:/Users/w/scoop/shims
-  C:/Users/w/AppData/Local/Microsoft/WindowsApps
+  $E:XDG_CONFIG_HOME/emacs/bin
+  # /usr/local/opt/python/libexec/bin
 ]
 var optpaths-filtered = [(each {|p|
       if (path:is-dir $p) { put $p }
 } $optpaths)]
 
 set paths = [
+  # ~/bin
+  # $E:GOPATH/bin
   $@optpaths-filtered
+  /etc/profiles/per-user/$E:USER/bin
+  /run/current-system/sw/bin/
+  /usr/local/bin
+  /usr/sbin
+  /sbin
+  /usr/bin
+  /bin
 ]
 
 each {|p|
@@ -67,6 +58,9 @@ set edit:insert:binding[Alt-m] = $edit:-instant:start~
 
 set edit:max-height = 20
 
+# use github.com/zzamboni/elvish-modules/1pass
+# 1pass:read-aliases
+
 use github.com/zzamboni/elvish-modules/lazy-vars
 
 # set E:USER_750WORDS = diego@zzamboni.org
@@ -76,7 +70,7 @@ use github.com/zzamboni/elvish-modules/lazy-vars
 use alias
 
 fn have-external { |prog|
-  put ?(which $prog 2>&1)
+  put ?(which $prog >/dev/null 2>&1)
 }
 fn only-when-external { |prog lambda|
   if (have-external $prog) { $lambda }
@@ -100,7 +94,9 @@ only-when-external lsd {
   alias:new tree lsd --tree
 }
 
-only-when-external hub { alias:new git hub }
+only-when-external dfc {
+  alias:new dfc e:dfc -p -/dev/disk1s4,devfs,map,com.apple.TimeMachine
+}
 
 only-when-external bat {
   alias:new cat bat
@@ -108,12 +104,20 @@ only-when-external bat {
   set E:MANPAGER = "sh -c 'col -bx | bat -l man -p'"
 }
 
+fn manpdf {|@cmds|
+  each {|c|
+    man -t $c | open -f -a /System/Applications/Preview.app
+  } $cmds
+}
+
 use github.com/xiaq/edit.elv/smart-matcher
 smart-matcher:apply
 
 # Enable the universal command completer if available.
 # See https://github.com/rsteube/carapace-bin
-if (has-external carapace) { eval (carapace _carapace | slurp) }
+if (has-external carapace) {
+  eval (carapace _carapace | slurp)
+}
 
 use github.com/zzamboni/elvish-completions/ssh
 
@@ -124,6 +128,8 @@ eval (starship init elvish --print-full-init | slurp)
 set edit:prompt-stale-transform = {|x| styled $x "bright-black" }
 
 set edit:-prompt-eagerness = 10
+
+use github.com/zzamboni/elvish-modules/long-running-notifications
 
 use github.com/zzamboni/elvish-modules/bang-bang
 
@@ -146,20 +152,6 @@ only-when-external  zoxide {
   edit:add-var zi~ $__zoxide_zi~
 }
 
-only-when-external exa {
-  var exa-ls~ = { |@_args|
-    use github.com/zzamboni/elvish-modules/util
-    e:exa --color-scale --git --group-directories-first (each {|o|
-        util:cond [
-          { eq $o "-lrt" }  "-lsnew"
-          { eq $o "-lrta" } "-alsnew"
-          :else             $o
-        ]
-    } $_args)
-  }
-  edit:add-var ls~ $exa-ls~
-}
-
 use github.com/zzamboni/elvish-modules/terminal-title
 
 var private-loaded = ?(use private)
@@ -167,8 +159,6 @@ var private-loaded = ?(use private)
 use github.com/zzamboni/elvish-modules/atlas
 
 use github.com/zzamboni/elvish-modules/opsgenie
-
-use github.com/zzamboni/elvish-modules/tinytex
 
 only-when-external pyenv {
   set paths = [ ~/.pyenv/shims $@paths ]
@@ -185,9 +175,9 @@ use github.com/zzamboni/elvish-modules/util
 
 use github.com/muesli/elvish-libs/git
 
-# use github.com/iwoloschin/elvish-packages/update
-# set update:curl-timeout = 3
-# update:check-commit &verbose
+use github.com/iwoloschin/elvish-packages/update
+set update:curl-timeout = 3
+update:check-commit &verbose
 
 use github.com/zzamboni/elvish-modules/util-edit
 util-edit:electric-delimiters
