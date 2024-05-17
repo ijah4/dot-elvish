@@ -17,7 +17,11 @@ var optpaths = [
   /usr/local/bin
   /usr/local/sbin
   #windows
+  C:\Users\w\scoop\apps\gcc\current\bin
   "C:/Program Files (x86)/Common Files/Oracle/Java/javapath"
+  C:\ProgramData\scoop\apps\llvm\current\bin
+  C:\ProgramData\scoop\apps\gcc-arm-none-eabi\current\bin
+  C:\ProgramData\scoop\apps\gpg\current\bin
   C:/ProgramData/scoop/apps/python/current/Scripts
   C:/ProgramData/scoop/apps/python/current
   c:/ProgramData/scoop/shims
@@ -36,7 +40,7 @@ var optpaths = [
   C:/Users/w/AppData/Local/Microsoft/WindowsApps
 ]
 var optpaths-filtered = [(each {|p|
-      if (path:is-dir $p) { put $p }
+      if (path:is-dir &follow-symlink $p) { put $p }
 } $optpaths)]
 
 set paths = [
@@ -76,7 +80,7 @@ use github.com/zzamboni/elvish-modules/lazy-vars
 use alias
 
 fn have-external { |prog|
-  put ?(which $prog 2>&1)
+  put ?(where $prog 2>&1)
 }
 fn only-when-external { |prog lambda|
   if (have-external $prog) { $lambda }
@@ -131,7 +135,7 @@ set edit:insert:binding[Ctrl-R] = {
   edit:histlist:start
 }
 
-only-when-external  zoxide {
+only-when-external zoxide {
   eval (zoxide init elvish | slurp)
   fn __zoxide_zi {|@rest|
       var path

@@ -9,7 +9,7 @@ use github.com/zzamboni/elvish-modules/util
 # directories
 
 fn maildir-cleanup {
-  du -cka | sort -rn | tail -n +3 | eawk {|line size f|
+  du -cka | sort -rn | tail -n +3 | awk {|line size f|
     echo $f
     less -p Subject: -i $f
     if (util:y-or-n &style=yellow "Remove "$f"?") {
